@@ -30,18 +30,15 @@ public class Main {
 		window.add(gamePanel, BorderLayout.CENTER);
 		window.pack();
 		
-		MessagePanel messagePanel = new MessagePanel();
-		window.add(messagePanel, BorderLayout.LINE_END);
+		//.MessagePanel messagePanel = new MessagePanel();
+		window.add(gamePanel.mPanel, BorderLayout.LINE_END);
 
-		//window.setLayout(null);
-		//
 		window.pack();
-
 		
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 		
-		gamePanel.mPanel = messagePanel;
+		//gamePanel.mPanel = messagePanel;
 		gamePanel.StartGameThread();
 	}
 

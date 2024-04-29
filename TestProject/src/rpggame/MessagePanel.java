@@ -47,7 +47,7 @@ public class MessagePanel extends JPanel {
 		this.message.append(message + "\r\n" + ">> ");
 		
 		int count = this.message.getLineCount();
-		System.out.println("Count: " + count);
+		//System.out.println("Count: " + count);
 		//this.message.
 		
 		while (count > 6)

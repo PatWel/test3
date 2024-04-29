@@ -77,7 +77,9 @@ public class Player extends Entity {
 		
 		if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true
 				|| keyH.rightPressed == true) {
-			
+
+
+
 			// Check for collision
 			int col = worldX/gp.tileSize;
 			int row = worldY/gp.tileSize;
@@ -162,7 +164,8 @@ public class Player extends Entity {
 				spriteCounter = 0;
 			}
 		}
-		
+
+				
 		// Skip turn after certain number of seconds
 		long idleTime = System.nanoTime() - playerIdleStart;
 		long passLimit = 10000000000L;
@@ -179,6 +182,8 @@ public class Player extends Entity {
 			
 			keyH.spacePressed = false;
 		}
+		//System.out.println("Player WorldX: " + worldX + " WorldY: " + worldY);
+		//System.out.println("Player screenX: " + screenX + " screenY: " + screenY);	
 	}
 	
 	public void Console_coords()
@@ -228,6 +233,9 @@ public class Player extends Entity {
 			}			
 			break;			
 		}
+		//System.out.println("Player WorldX: " + worldX + " WorldY: " + worldY);
+		//System.out.println("Player screenX: " + screenX + " screenY: " + screenY);		
+
 		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
 		
 	}

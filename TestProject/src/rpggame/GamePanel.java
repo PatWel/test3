@@ -4,9 +4,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
+import entity.Entity;
+import entity.Monster;
 import entity.Player;
 import tile.TileManager;
 
@@ -49,9 +52,18 @@ public class GamePanel extends JPanel implements Runnable{
 	//public long playerTurnStartTime = 0;
 	
 	Thread gameThread;
-	public MessagePanel mPanel = new MessagePanel();
+	//public MessagePanel mPanel = new MessagePanel();
 	
+	public MessagePanel mPanel = new MessagePanel();;
 
+	//////////////////////////////////////////////////////////////////////
+	// World Objects
+	//////////////////////////////////////////////////////////////////////
+	// MWandering Monsters
+
+	public ArrayList<Entity> monsters = new ArrayList<Entity>();
+		
+	
 			
 	public GamePanel() {
 		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -64,6 +76,15 @@ public class GamePanel extends JPanel implements Runnable{
 	public void StartGameThread() {
 		gameThread = new Thread(this);
 		gameThread.start();
+	}
+	
+	public Monster createMonster()
+	{
+		Monster m = new Monster(this);
+		
+		monsters.add(m);
+		
+		return m;
 	}
 	
 	@Override
@@ -80,6 +101,11 @@ public class GamePanel extends JPanel implements Runnable{
 
 		//playerTurnStartTime = System.nanoTime();
 		//int playerTurnCount = 0;
+		
+		/////////////////////////////////////////////////////
+		// Test monster
+		/////////////////////////////////////////////////////
+		this.createMonster();
 		
 		while(gameThread != null)
 		{
@@ -124,10 +150,20 @@ public class GamePanel extends JPanel implements Runnable{
 		}
 		if (player.playerTurn == false)
 		{
-			System.out.println("World Update");
+			//System.out.println("World Update");
+			updateWorld();
 			player.playerTurn = true;
 		}
 
+	}
+	
+	// Update all world objects
+	public void updateWorld() {
+    	//System.out.println("update monsters");
+	    for (int i = 0; i < monsters.size(); i++) {
+	    	//ystem.out.println("update monster "+ i);
+	        ((Monster) monsters.get(i)).update();
+	      }	
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -137,7 +173,7 @@ public class GamePanel extends JPanel implements Runnable{
 
 		tileM.draw(g2);
 		player.draw(g2);
-		
+		drawWorld(g2);
 		// Grid
 		//g2.setColor(Color.red);
 		//g2.fillRect(0, 0, tileSize, tileSize);
@@ -145,8 +181,16 @@ public class GamePanel extends JPanel implements Runnable{
 		//g2.setColor(Color.blue);
 		//g2.fillRect(0, tileSize, tileSize, tileSize);
 		
-		g2.dispose();
+		//g2.dispose();
 		//System.out.println("X: " + playerX);
 	}
 	
+	public void drawWorld(Graphics2D g2) {
+		//Graphics2D g2 = (Graphics2D)g;
+				
+	    for (int i = 0; i < monsters.size(); i++) {
+	        ((Monster) monsters.get(i)).draw(g2);
+	      }
+		//g2.dispose();
+	}
 }
