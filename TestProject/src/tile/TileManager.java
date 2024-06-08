@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 
 import javax.imageio.ImageIO;
 
+import core.UtilityTool;
 import rpggame.GamePanel;
 
 public class TileManager {
@@ -19,7 +20,7 @@ public class TileManager {
 	public TileManager(GamePanel gp)
 	{
 		this.gp = gp;
-		tile = new Tile[10];
+		tile = new Tile[20];
 		mapTileNum = new int[gp.maxWorldCol][gp.maxWorldRow];
 		
 		GetTileImage();
@@ -28,7 +29,23 @@ public class TileManager {
 	
 	public void GetTileImage()
 	{
-		try {
+			setup(0, "grass1_32", false, false);
+			setup(1, "hills2_32", true, true);
+			setup(2, "water00", true, false); 
+			setup(3, "tree4_32", true, true); 
+			setup(4, "tree4_32", true, false); 
+			setup(5, "floor", false, false); 
+			setup(6, "town", false, false); 
+			setup(7, "castle", false, false); 
+			setup(8, "hills3_32", false, false); 
+			setup(9, "hills4_32", true, true); 
+			setup(10, "hit", false, false); 
+			
+			//setup(10, "I", true, false); 
+			//setup(11, "hit_32", true, false); 			
+			
+			
+			/*
 			tile[0] = new Tile();
 			tile[0].image = ImageIO.read(getClass().getResourceAsStream("/tiles/grass01.png"));
 			
@@ -51,11 +68,27 @@ public class TileManager {
 			tile[5] = new Tile();
 			tile[5].image = ImageIO.read(getClass().getResourceAsStream("/tiles/floor.png"));
 		}
-		catch(IOException e) {
+		*/
+	}
+		
+	public void setup(int index, String path, boolean collision, boolean obstacle) {
+		UtilityTool uTool = new UtilityTool();
+
+		try
+		{
+			tile[index] = new Tile();
+			tile[index].image = ImageIO.read(getClass().getResourceAsStream("/tiles/" + path + ".png"));
+			tile[index].image = uTool.scaleImage(tile[index].image, gp.tileSize, gp.tileSize);
+			tile[index].collision = collision;
+			tile[index].index = index;
+			tile[index].obstacle = obstacle;
+			
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+		
 	public void LoadMap(String filePath) {
 		try {
 			InputStream is = getClass().getResourceAsStream(filePath);

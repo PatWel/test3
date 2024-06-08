@@ -39,25 +39,38 @@ public class CollisionChecker {
 		
 		switch (direction)
 		{
-		case "left":
+		case "West":
 			col --;
 			break;
-		case "right":
+		case "East":
 			col++;
 			break;
-		case "up":
+		case "North":
 			row--;
 			break;
-		case "down":
+		case "South":
 			row++;
 			break;
 		}
-		
+
+		/*
 		if (col>=0 && col < gp.maxWorldCol && row >=0 && row < gp.maxWorldRow) {
 			tileNum = gp.tileM.mapTileNum[col][row];
 			tileCheck = gp.tileM.tile[tileNum];
 			return tileCheck.collision;
 		}
-		return ret;
+		*/
+		return IsTileAvailable(col, row);
+
+	}
+	
+	public boolean IsTileAvailable(int x, int y)
+	{
+		int tileNum = 0;
+		Tile tileCheck;
+
+		tileNum = gp.tileM.mapTileNum[x][y];
+		tileCheck = gp.tileM.tile[tileNum];
+		return !tileCheck.collision;
 	}
 }

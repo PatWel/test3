@@ -3,31 +3,39 @@ package entity;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+import core.Position;
 import rpggame.GamePanel;
+import rpggame.Pathfinder;
 
 public class Monster extends Entity {
 	
 	public int screenX;
 	public int screenY;
+	private int monsterType = 0;
 	
-	public Monster(GamePanel gp)
+	public Monster(GamePanel gp, int monsterType)
 	{
 		this.gp = gp;
-
+		this.monsterType = monsterType;
 		screenX = gp.screenWidth/2 - (gp.tileSize/2);
 		screenY = gp.screenHeight/2- (gp.tileSize/2);
 		SetDefaultValues();
 		getMonsterImage();
 		
+		hitPoints = 4;
+		armorClass = 10;
+		
 	}
 	
 	public void SetDefaultValues() {
-		worldX = gp.tileSize * 23;
-		worldY = gp.tileSize * 21;
+		worldX = gp.tileSize * 8;
+		worldY = gp.tileSize * 22;
 		//worldX = gp.tileSize * 20;
 		//worldY = gp.tileSize * 25;
 
@@ -36,19 +44,23 @@ public class Monster extends Entity {
 	}
 	
 	public void getMonsterImage() {
-		try {
-			up1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton.png"));
-			up2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
-			down1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton.png"));
-			down2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
-			right1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton.png"));
-			right2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
-			left1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton.png"));
-			left2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
-
-
-		} catch(IOException e) {
-			e.printStackTrace();
+		if (this.monsterType == 1)
+		{
+			try {
+				up1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton1_32.png"));
+				up2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2_32.png"));
+				down1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton3_32.png"));
+				//down2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
+				//right1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton.png"));
+				//right2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
+				//left1 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton.png"));
+				//left2 = ImageIO.read(getClass().getResourceAsStream("/tiles/skeleton2.png"));
+	
+				hit = ImageIO.read(getClass().getResourceAsStream("/tiles/hit.png"));
+	
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}	
 	
@@ -61,61 +73,62 @@ public class Monster extends Entity {
 		int col = worldX/gp.tileSize;
 		int row = worldY/gp.tileSize;
 
+		// Death
+		if (hitPoints < 1) {
+			gp.monsters.remove(this);
+			return;
+		}
 		
-		// Testing - random direction
-		Random rand = new Random();
+		// Pathfinding
+		Position start = new Position(worldX, worldY, gp.tileSize);
+		Position target = new Position(gp.player.worldX, gp.player.worldY, gp.tileSize);
 		
-		int max = 4;
-		int min = 1;
-		int dir = rand.nextInt(max - min + 1) + min;
+		List<Position> path = Pathfinder.findPath(start, target, gp);
 		
-		if (dir == 1) {
-			direction = "up";
-			if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
+		if (!path.isEmpty()) {
+			Iterator itr = path.iterator();
+			while (itr.hasNext()) {
+				Position pos = (Position)itr.next();
+				//System.out.println("Pos: [" + pos.getCol() + "].[" + pos.getRow()+ "]");
+			}
+			
+			Position pos = path.get(0);
+			
+			// Auto Attack
+			if (pos.getCol() == gp.player.worldX / gp.tileSize
+					&& pos.getRow() == gp.player.worldY / gp.tileSize)
 			{
-				worldY -= speed;
+				//System.out.printf("Monster attack from [%d].[%d]\n", pos.getCol(), pos.getRow());
+				this.attack(pos, gp.player);
+				gp.player.playerTurn = true;
+			}
+			else 
+			{
+				// Check for open tile around the 
+				if (gp.checkTileForMonster(pos.getCol(), pos.getRow(), gp.tileSize) != null)
+				{
+					System.out.printf("%s Blocked by [%d][%d]\n", name, pos.getCol(), pos.getRow());
+				}
+				else
+				{
+				worldX = pos.getCol() * gp.tileSize;
+				worldY = pos.getRow() * gp.tileSize;
+				}
 			}
 		}
-	
-		if (dir == 2) {
-			direction = "down";
-			if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-			{
-				worldY += speed;
-			}
+		else {
+			System.out.println("monsterEmpty path");
+		
 		}
-		if (dir == 3) {
-			direction = "left";
-			if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-			{
-				worldX -= speed;
-			}
-		}
-		if (dir == 4) {
-			direction = "right";
-			if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-			{
-				worldX += speed;
-			}
-		}
-
-		{
-			System.out.println("Monster dir: " + direction + " " + dir);
-		}
-		spriteNum = 1;
-
-		// Adjust the screenX and Y
-		//screenX = worldX/gp.tileSize; // - (gp.tileSize/2);
-		//screenY = worldY/gp.tileSize;
-
-		col = worldX/gp.tileSize;
-		row = worldY/gp.tileSize;
-
+		
+		
 		// TODO: Study why this works
 		screenX = worldX - gp.player.worldX + gp.player.screenX;
 		screenY = worldY - gp.player.worldY + gp.player.screenY;
 		
-		//System.out.println("Monster WorldX: " + worldX + " WorldY: " + worldY);
+
+		
+//		System.out.println("Monster WorldX: " + worldX + " WorldY: " + worldY);
 		//System.out.println("Monster screenX: " + screenX + " screenY: " + screenY);
 		//System.out.println("Monster mov: x: " + col + ", " + row);
 	}
@@ -123,9 +136,50 @@ public class Monster extends Entity {
 	public void draw(Graphics2D g2) {
 		//System.out.println("Draw Monster");
 		
+		// hit image count
+		if (hitState == true)
+		{
+			hitCounter++;
+			if (hitCounter > 50) {
+				hitState = false;
+				hitCounter =0;
+			}
+		}
+		 
+		// toggle the image for "animation"
+		spriteCounter++;
+		if (spriteCounter > 30) 
+		{
+			if (spriteNum == 1) 
+			{
+				spriteNum = 2;
+			} else if (spriteNum == 2) 
+			{
+				spriteNum = 3;
+			} else if (spriteNum == 3) 
+			{
+				spriteNum = 1;
+				
+			}
+			spriteCounter = 0;
+		}
+		
+		
 //		g2.setColor(Color.white);
 //		g2.fillRect(x, y, gp.tileSize, gp.tileSize);
 		BufferedImage image = null;
+		//System.out.printf("monster dir: %s\n", direction);
+		if (spriteNum == 1) {
+			image = up1;
+		}
+		if (spriteNum == 2) {
+			image = up2;
+		}
+		if (spriteNum == 3) {
+			image = down1;
+		}
+		
+		/*
 		switch(direction) {
 		case "up":
 			if (spriteNum == 1) {
@@ -160,10 +214,25 @@ public class Monster extends Entity {
 			}			
 			break;			
 		}
+		if (hitState == true)
+		{
+			image = hit;
+		}
+		*/
 		//System.out.println("Draw Monster screenX: " + screenX + " screenY: " + screenY);
 		// Monster is not always in the center of the screen
 //		System.out.println("Monster WorldX: " + worldX + " WorldY: " + worldY);
 //		System.out.println("Monster screenX: " + screenX + " screenY: " + screenY);
+		//System.out.println("monster draw");
 		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+		
+		
+	}
+	public Position getMonsterPosition()
+	{
+		int col = worldX/gp.tileSize;
+		int row = worldY/gp.tileSize;
+		Position pos = new Position(col, row, gp.tileSize);
+		return pos;
 	}
 }

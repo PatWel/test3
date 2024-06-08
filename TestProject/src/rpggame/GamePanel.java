@@ -2,9 +2,11 @@ package rpggame;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Random;
 
 import javax.swing.JPanel;
 
@@ -38,31 +40,23 @@ public class GamePanel extends JPanel implements Runnable{
 	
 	public CollisionChecker cChecker = new CollisionChecker(this);
 	public Player player = new Player(this, keyH);
+	public ArrayList<Entity> party = new ArrayList<Entity>(4);
 	
-//	int playerY = 100;
-//	int playerX = 100;
-//	int playerSpeed = 4;
-	
-	int playerY = 100;
-	int playerX = 100;
-	int playerSpeed = 4;
+	public static Random rand = new Random();
 
-	//private int playerGameState_Player = 1;
-	//int playerGameState = playerGameState_Player;
-	//public long playerTurnStartTime = 0;
-	
 	Thread gameThread;
 	//public MessagePanel mPanel = new MessagePanel();
 	
 	public MessagePanel mPanel = new MessagePanel();;
 
+	boolean showGameInfo = true;
+	
 	//////////////////////////////////////////////////////////////////////
 	// World Objects
 	//////////////////////////////////////////////////////////////////////
 	// MWandering Monsters
-
 	public ArrayList<Entity> monsters = new ArrayList<Entity>();
-		
+	//public ArrayList<Entity> party = new ArrayList<Entity>();
 	
 			
 	public GamePanel() {
@@ -71,6 +65,8 @@ public class GamePanel extends JPanel implements Runnable{
 		this.setDoubleBuffered(true); 
 		this.addKeyListener(keyH);
 		this.setFocusable(true);
+		
+		party.add(player);
 	}
 
 	public void StartGameThread() {
@@ -78,12 +74,11 @@ public class GamePanel extends JPanel implements Runnable{
 		gameThread.start();
 	}
 	
-	public Monster createMonster()
+	public Monster createMonster(int monsterType)
 	{
-		Monster m = new Monster(this);
-		
+		Monster m = new Monster(this, monsterType);
 		monsters.add(m);
-		
+		m.name = "Skully " + monsters.size();
 		return m;
 	}
 	
@@ -105,7 +100,20 @@ public class GamePanel extends JPanel implements Runnable{
 		/////////////////////////////////////////////////////
 		// Test monster
 		/////////////////////////////////////////////////////
-		this.createMonster();
+		this.createMonster(1).setWorldPos(8,22);
+		this.createMonster(1).setWorldPos(8, 30);
+		this.createMonster(1).setWorldPos(23, 12);
+		this.createMonster(1).setWorldPos(8,20);
+		this.createMonster(1).setWorldPos(10, 12);
+		this.createMonster(1).setWorldPos(23, 15);
+		
+		for (int i = 0; i<20; i++)
+		{
+			this.createMonster(1).setWorldPos(23, 43-i);
+		}
+		//this.createMonster(1);
+		//this.createMonster(1);
+		//this.createMonster(1);
 		
 		while(gameThread != null)
 		{
@@ -157,6 +165,12 @@ public class GamePanel extends JPanel implements Runnable{
 
 	}
 	
+	// Testing combat
+	public void testCombat()
+	{
+		Combat c = new Combat(monsters, party);
+	}
+	
 	// Update all world objects
 	public void updateWorld() {
     	//System.out.println("update monsters");
@@ -174,6 +188,15 @@ public class GamePanel extends JPanel implements Runnable{
 		tileM.draw(g2);
 		player.draw(g2);
 		drawWorld(g2);
+		
+		if (this.showGameInfo) {
+			Font messageFont = 	new Font("Minecraft Seven",Font.BOLD,20);
+			g2.setFont(messageFont);
+			g2.setColor(Color.WHITE);
+			 String temp = player.name+ " WX: " + player.worldX + " WY: " + player.worldY +  "[" + player.worldX/tileSize + "][" + player.worldY/tileSize + "]";
+			g2.drawString(temp,10,20);
+			 temp = player.name+ " WX: " + player.worldX + " WY: " + player.worldY;
+		}
 		// Grid
 		//g2.setColor(Color.red);
 		//g2.fillRect(0, 0, tileSize, tileSize);
@@ -192,5 +215,26 @@ public class GamePanel extends JPanel implements Runnable{
 	        ((Monster) monsters.get(i)).draw(g2);
 	      }
 		//g2.dispose();
+	}
+	
+	public static int rollDice(int max, int min)
+	{
+		return rand.nextInt(max-min)+min+1;
+	}
+	
+	public Entity checkTileForMonster(int col, int row, int tileSize)
+	{	
+		for (int i = 0; i < monsters.size(); i++) {
+			int colm = monsters.get(i).worldX/tileSize;
+			int rowm = monsters.get(i).worldY/tileSize;
+			
+			if (col == colm && row == rowm)
+			{
+				return monsters.get(i);
+			}
+	      }
+	    
+		return null;
+		
 	}
 }

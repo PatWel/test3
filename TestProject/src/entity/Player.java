@@ -8,9 +8,12 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import rpggame.Combat;
 import rpggame.GamePanel;
 import rpggame.KeyHandler;
+import rpggame.KeyHandler.CommandLevel;
 import tile.Tile;
+import core.Position;
 
 public class Player extends Entity {
 
@@ -23,6 +26,8 @@ public class Player extends Entity {
 	public boolean playerTurn = true;
 	public long playerIdleTime = 0;
 	public long playerIdleStart = 0;
+	private int state = 0;	// 0 = normal 1 = attack
+
 	
 	public Player(GamePanel gp, KeyHandler keyH) {
 		this.gp = gp;
@@ -40,20 +45,23 @@ public class Player extends Entity {
 		worldX = gp.tileSize * 23;
 		worldY = gp.tileSize * 21;
 		speed = gp.tileSize;
-		direction = "down";
+		direction = "South";
+		name = "Babar";
 	}
 	
 	public void getPlayerImage() {
 		try {
-			up1 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			up2 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			down1 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			down2 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			left1 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			left2 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			right1 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
-			right2 = ImageIO.read(getClass().getResourceAsStream("/player/party.png"));
+			up1 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			up2 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			down1 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			down2 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			left1 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			left2 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			right1 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
+			right2 = ImageIO.read(getClass().getResourceAsStream("/player/player1.png"));
 
+			hit = ImageIO.read(getClass().getResourceAsStream("/tiles/hit.png"));
+			
 //			up1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_1.png"));
 //			up2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_Up_2.png"));
 //			down1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_1.png"));
@@ -73,99 +81,218 @@ public class Player extends Entity {
 		Console_coords();
 		String message;
 		
+		
+		// Movement
 		boolean invalidMove = false;
 		
-		if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true
-				|| keyH.rightPressed == true) {
-
-
-
-			// Check for collision
-			int col = worldX/gp.tileSize;
-			int row = worldY/gp.tileSize;
-			
-
-			if (keyH.leftPressed == true) {
-				direction = "left";
+		// 2nd part of command.  Direction
+		if (keyH.cmdLevel == CommandLevel.CMD_LEVEL_2)
+		{
+			if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true
+					|| keyH.rightPressed == true) {
+		
+				Monster monster = null;
 				
-				if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-				{
-					worldX -= speed;
+				// Examine target
+				if (keyH.leftPressed == true) {
+					direction = "West";
+					gp.mPanel.AddMessageText(direction, false);
+					keyH.leftPressed = false;
+					keyH.cmdLevel = CommandLevel.CMD_LEVEL_1;
+					//System.out.println("worldX: " + worldX + " + worldY: " + worldY);
+					monster = (Monster)gp.checkTileForMonster((int)worldX/gp.tileSize-1,(int)worldY/gp.tileSize, gp.tileSize); 
+					if (monster != null)
+					{
+						//System.out.println("Attack monster " + monster.name);
+						attack(monster.getMonsterPosition(), monster);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
+					else
+					{
+						gp.mPanel.AddMessageText("Nothing There!", false);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
 				}
-				else
-				{
-					invalidMove = true;
+				if (keyH.rightPressed == true) {
+					direction = "East";
+					gp.mPanel.AddMessageText(direction, false);
+					keyH.rightPressed = false;
+					keyH.cmdLevel = CommandLevel.CMD_LEVEL_1;
+					monster = (Monster)gp.checkTileForMonster((int)worldX/gp.tileSize+1,(int)worldY/gp.tileSize, gp.tileSize); 
+					if (monster != null)
+					{
+						//System.out.println("Attack monster " + monster.name);
+						attack(monster.getMonsterPosition(), monster);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
+					else
+					{
+						gp.mPanel.AddMessageText("Nothing There!", false);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
 				}
-				keyH.leftPressed = false;
-			} else if (keyH.rightPressed == true) {
-				direction = "right";
+				if (keyH.upPressed == true) {
+					direction = "North";
+					gp.mPanel.AddMessageText(direction, false);
+					keyH.upPressed = false;
+					keyH.cmdLevel = CommandLevel.CMD_LEVEL_1;
+					monster = (Monster)gp.checkTileForMonster((int)worldX/gp.tileSize,(int)worldY/gp.tileSize-1, gp.tileSize); 
+					if (monster != null)
+					{
+						//System.out.println("Attack monster " + monster.name);
+						attack(monster.getMonsterPosition(), monster);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
+					else
+					{
+						gp.mPanel.AddMessageText("Nothing There!", false);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
+				}
+				if (keyH.downPressed == true) {
+					direction = "South";
+					gp.mPanel.AddMessageText(direction, false);
+					keyH.downPressed = false;
+					keyH.cmdLevel = CommandLevel.CMD_LEVEL_1;
+					monster = (Monster)gp.checkTileForMonster((int)worldX/gp.tileSize,(int)worldY/gp.tileSize+1, gp.tileSize); 
+					if (monster != null)
+					{
+						//System.out.println("Attack monster " + monster.name);
+						attack(monster.getMonsterPosition(), monster);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
+					else
+					{
+						gp.mPanel.AddMessageText("Nothing There!", false);
+						playerTurn = false;
+						playerIdleStart = System.nanoTime();
+					}
+				}
 				
-				if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-				{
-					worldX += speed;
-				}
-				else
-				{
-					invalidMove = true;
-
-				}
-				keyH.rightPressed = false;
-			} else if (keyH.upPressed == true) {
-				direction = "up";
-
-				if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-				{
-					worldY -= speed;
-				}
-				else
-				{
-					invalidMove = true;
-
-				}				
-				keyH.upPressed = false;
-			} else if (keyH.downPressed == true) {
-				direction = "down";
-
-				if (gp.cChecker.CheckTargetTile(direction, row, col) == false)
-				{
-					worldY += speed;
-				}
-				else
-				{
-					invalidMove = true;
-
-				}
-				keyH.downPressed = false;
-			}
+			}			
+		}
+		else
+		if (keyH.cmdLevel == CommandLevel.CMD_LEVEL_1)
+		{
+			//System.out.println(" Player update Level 1 command" + keyH.leftPressed);
 			
-			//gp.mPanel.AddMessageText(direction);
-			if (invalidMove == true) {
-				message = direction + "\r\nInvalid Move!";
-				gp.mPanel.AddMessageText(message);
-			}
-			else
-			{
-				gp.mPanel.AddMessageText(direction);
-			}
+			if (keyH.upPressed == true || keyH.downPressed == true || keyH.leftPressed == true
+					|| keyH.rightPressed == true) {
+	
+				// Check for collision
+				int col = worldX/gp.tileSize;
+				int row = worldY/gp.tileSize;
+				
+				if (keyH.leftPressed == true) {
+					direction = "West";
+					
+					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
+					{
+						worldX -= speed;
+					}
+					else
+					{
+						invalidMove = true;
+					}
+					keyH.leftPressed = false;
+				} else if (keyH.rightPressed == true) {
+					direction = "East";
+					
+					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
+					{
+						worldX += speed;
+					}
+					else
+					{
+						invalidMove = true;
+	
+					}
+					keyH.rightPressed = false;
+				} else if (keyH.upPressed == true) {
+					direction = "North";
+	
+					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
+					{
+						worldY -= speed;
+					}
+					else
+					{
+						invalidMove = true;
+	
+					}				
+					keyH.upPressed = false;
+				} else if (keyH.downPressed == true) {
+					direction = "South";
+	
+					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
+					{
+						worldY += speed;
+					}
+					else
+					{
+						invalidMove = true;
+	
+					}
+					keyH.downPressed = false;
+				}
 			
-			playerTurn = false;
-			playerIdleStart = System.nanoTime();
+				if (invalidMove == true) {
+					message = direction + "\r\nInvalid Move!";
+					gp.mPanel.AddMessageText(message, false);
+				}
+				else
+				{
+					gp.mPanel.AddMessageText(direction, false);
+				}
+			
+				playerTurn = false;
+				playerIdleStart = System.nanoTime();
 			
 			//collisionOn = false;
 			//gp.cChecker.CheckTile(this);
 			
-			spriteCounter++;
-			if (spriteCounter > 12) {
-				if (spriteNum == 1) {
-					spriteNum = 2;
-				} else if (spriteNum == 2) {
-					spriteNum = 1;
+				spriteCounter++;
+				if (spriteCounter > 12) {
+					if (spriteNum == 1) {
+						spriteNum = 2;
+					} else if (spriteNum == 2) {
+						spriteNum = 1;
+					}
+					spriteCounter = 0;
 				}
-				spriteCounter = 0;
 			}
 		}
 
-				
+		if (keyH.attackPressed == true) {
+			//////////////////////////////////////////
+			//Prompt for direction
+			//////////////////////////////////////////
+			gp.mPanel.AddMessageText("Attack-", true);
+			keyH.attackPressed = false;
+			this.state = 1;
+			keyH.cmdLevel = CommandLevel.CMD_LEVEL_2;
+			//subCommandNeeded = true;
+		}		
+
+		if (keyH.peerPressed == true) {
+			//////////////////////////////////////////
+			//Prompt for direction
+			//////////////////////////////////////////
+			gp.mPanel.AddMessageText("Direction->", true);
+		}
+		if (keyH.testPressed == true) {
+			gp.testCombat();
+			keyH.testPressed = false;
+		}		
+	
+		
 		// Skip turn after certain number of seconds
 		long idleTime = System.nanoTime() - playerIdleStart;
 		long passLimit = 10000000000L;
@@ -176,7 +303,7 @@ public class Player extends Entity {
 		
 		if (keyH.spacePressed == true)
 		{
-			gp.mPanel.AddMessageText("pass");
+			gp.mPanel.AddMessageText("Pass", false);
 			playerTurn = false;
 			playerIdleStart = System.nanoTime();
 			
@@ -196,11 +323,14 @@ public class Player extends Entity {
 	}
 	
 	public void draw(Graphics2D g2) {
-//		g2.setColor(Color.white);
-//		g2.fillRect(x, y, gp.tileSize, gp.tileSize);
+		
+		/////////////////////////////////////////////////
+		// Hide non visible tiles
+		/////////////////////////////////////////////////
+		
 		BufferedImage image = null;
 		switch(direction) {
-		case "up":
+		case "North":
 			if (spriteNum == 1) {
 				image = up1;
 			}
@@ -208,7 +338,7 @@ public class Player extends Entity {
 				image = up2;
 			}	
 			break;
-		case "down":
+		case "South":
 			if (spriteNum == 1) {
 				image = down1;
 			}
@@ -216,7 +346,7 @@ public class Player extends Entity {
 				image = down2;
 			}
 			break;
-		case "left":
+		case "West":
 			if (spriteNum == 1) {
 				image = left1;
 			}
@@ -224,7 +354,7 @@ public class Player extends Entity {
 				image = left2;
 			}
 			break;		
-		case "right":
+		case "East":
 			if (spriteNum == 1) {
 				image = right1;
 			}
@@ -234,9 +364,21 @@ public class Player extends Entity {
 			break;			
 		}
 		//System.out.println("Player WorldX: " + worldX + " WorldY: " + worldY);
-		//System.out.println("Player screenX: " + screenX + " screenY: " + screenY);		
-
-		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
+		//System.out.println("Player WorldX: " + worldX /gp.tileSize + " WorldY: " + worldY / gp.tileSize);
+		Position pos = new Position(worldX, worldY, gp.tileSize);
 		
+		// Set image to "splat" for a hit.  Show for 50 ticks
+		if (hitState == true)
+		{
+			hitCounter++;
+			if (hitCounter > 50) {
+				hitState = false;
+				hitCounter =0;
+			}
+		}
+		if (hitState == true) {
+			image = hit;
+		}
+		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
 	}
 }

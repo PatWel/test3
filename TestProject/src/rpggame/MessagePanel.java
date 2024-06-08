@@ -15,7 +15,7 @@ public class MessagePanel extends JPanel {
 	int messageHeight = 300;
 	public JTextArea  message;
 	
-	Font messageFont = 	new Font("Serif",Font.PLAIN,12);
+	Font messageFont = 	new Font("Minecraft Seven",Font.BOLD,20);
 	
 	public MessagePanel()
 	{
@@ -39,12 +39,15 @@ public class MessagePanel extends JPanel {
 		this.message.setText(message);
 	}
 
-	public void AddMessageText(String message) {
+	public void AddMessageText(String message, boolean suppressPrompt) {
 		
 		//String tmp = this.message.getText();
 		//tmp = message + "\r\n" + tmp + ">> ";
-	
-		this.message.append(message + "\r\n" + ">> ");
+		
+		if (suppressPrompt) {
+			this.message.append(message);
+		}
+		else this.message.append(message + "\r\n" + ">> ");
 		
 		int count = this.message.getLineCount();
 		//System.out.println("Count: " + count);
@@ -55,7 +58,7 @@ public class MessagePanel extends JPanel {
 			int end = 0;
 			try {
 				end = this.message.getLineEndOffset(0);
-				System.out.println("end = " + end);
+				//System.out.println("end = " + end);
 			} catch (BadLocationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
