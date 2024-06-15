@@ -31,7 +31,7 @@ public class CollisionChecker {
 		
 	}
 	
-	public boolean CheckTargetTile(String direction, int row, int col)
+	public boolean CheckTargetTile(String direction, int col, int row)
 	{
 		int tileNum = 0;
 		Tile tileCheck;

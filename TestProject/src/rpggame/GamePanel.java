@@ -154,7 +154,7 @@ public class GamePanel extends JPanel implements Runnable{
 		if (player.playerTurn == true)
 		{
 			//System.out.println("Player Update");
-			player.Update();
+			player.update();
 		}
 		if (player.playerTurn == false)
 		{

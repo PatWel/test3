@@ -47,6 +47,7 @@ public class Player extends Entity {
 		speed = gp.tileSize;
 		direction = "South";
 		name = "Babar";
+		speed = 48;
 	}
 	
 	public void getPlayerImage() {
@@ -76,7 +77,7 @@ public class Player extends Entity {
 		}
 	}
 	
-	public void Update() {
+	public void update() {
 
 		Console_coords();
 		String message;
@@ -189,57 +190,73 @@ public class Player extends Entity {
 				// Check for collision
 				int col = worldX/gp.tileSize;
 				int row = worldY/gp.tileSize;
+
+				int tileSpan = speed/gp.tileSize;
 				
+				System.out.println("tileSpan: " + tileSpan);
 				if (keyH.leftPressed == true) {
 					direction = "West";
 					
-					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
-					{
-						worldX -= speed;
-					}
-					else
-					{
-						invalidMove = true;
-					}
+					//for (int i=0; i<tileSpan; i++)
+					//{
+						if (gp.cChecker.CheckTargetTile(direction, col, row) == true)
+						{
+							worldX -= speed;
+						}
+						else
+						{
+							invalidMove = true;
+						}
+					//}
 					keyH.leftPressed = false;
 				} else if (keyH.rightPressed == true) {
 					direction = "East";
-					
-					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
-					{
-						worldX += speed;
-					}
-					else
-					{
-						invalidMove = true;
-	
-					}
+
+					//for (int i=0; i<tileSpan; i++)
+					//{
+						if (gp.cChecker.CheckTargetTile(direction, col, row) == true)
+						{
+							worldX += speed;
+						}
+						else
+						{
+							invalidMove = true;
+							//break;
+						}
+					//}
 					keyH.rightPressed = false;
 				} else if (keyH.upPressed == true) {
 					direction = "North";
-	
-					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
-					{
-						worldY -= speed;
-					}
-					else
-					{
-						invalidMove = true;
-	
-					}				
+
+					//for (int i=0; i<tileSpan; i++)
+					//{
+						if (gp.cChecker.CheckTargetTile(direction, col, row) == true)
+						{
+							worldY -= speed;
+						}
+						else
+						{
+							invalidMove = true;
+							//break;
+						}
+					//}
 					keyH.upPressed = false;
 				} else if (keyH.downPressed == true) {
 					direction = "South";
+
+					//for (int i=0; i<tileSpan; i++)
+					//{
 	
-					if (gp.cChecker.CheckTargetTile(direction, row, col) == true)
-					{
-						worldY += speed;
-					}
-					else
-					{
-						invalidMove = true;
-	
-					}
+						if (gp.cChecker.CheckTargetTile(direction, col, row) == true)
+						{
+							worldY += speed;
+						}
+						else
+						{
+							invalidMove = true;
+							//break;
+						}
+					//}
 					keyH.downPressed = false;
 				}
 			

@@ -28,7 +28,7 @@ public class Monster extends Entity {
 		SetDefaultValues();
 		getMonsterImage();
 		
-		hitPoints = 4;
+		hitPoints = 1;
 		armorClass = 10;
 		
 	}
@@ -74,11 +74,14 @@ public class Monster extends Entity {
 		int row = worldY/gp.tileSize;
 
 		// Death
-		if (hitPoints < 1) {
-			gp.monsters.remove(this);
-			return;
-		}
+		//if (hitPoints < 1) {
+		//	gp.monsters.remove(this);
+		//	return;
+		//}
 		
+		if (hitPoints > 0)
+		{
+			
 		// Pathfinding
 		Position start = new Position(worldX, worldY, gp.tileSize);
 		Position target = new Position(gp.player.worldX, gp.player.worldY, gp.tileSize);
@@ -107,7 +110,7 @@ public class Monster extends Entity {
 				// Check for open tile around the 
 				if (gp.checkTileForMonster(pos.getCol(), pos.getRow(), gp.tileSize) != null)
 				{
-					System.out.printf("%s Blocked by [%d][%d]\n", name, pos.getCol(), pos.getRow());
+					//System.out.printf("%s Blocked by [%d][%d]\n", name, pos.getCol(), pos.getRow());
 				}
 				else
 				{
@@ -118,9 +121,11 @@ public class Monster extends Entity {
 		}
 		else {
 			System.out.println("monsterEmpty path");
-		
 		}
 		
+		}
+	
+
 		
 		// TODO: Study why this works
 		screenX = worldX - gp.player.worldX + gp.player.screenX;
@@ -214,11 +219,12 @@ public class Monster extends Entity {
 			}			
 			break;			
 		}
+
+		*/
 		if (hitState == true)
 		{
 			image = hit;
-		}
-		*/
+		}		
 		//System.out.println("Draw Monster screenX: " + screenX + " screenY: " + screenY);
 		// Monster is not always in the center of the screen
 //		System.out.println("Monster WorldX: " + worldX + " WorldY: " + worldY);
@@ -226,7 +232,11 @@ public class Monster extends Entity {
 		//System.out.println("monster draw");
 		g2.drawImage(image, screenX, screenY, gp.tileSize, gp.tileSize, null);
 		
-		
+		if ( (hitPoints < 1) && (hitState == false))
+		{
+			gp.monsters.remove(this);
+		}
+
 	}
 	public Position getMonsterPosition()
 	{

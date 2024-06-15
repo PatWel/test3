@@ -58,7 +58,7 @@ public class Entity {
 			System.out.println(" hit");
 			target.hitState = true;
 			damage = gp.rollDice(8, 2);
-			damage =1;
+			//damage =1;
 			System.out.println("For damage: " + damage + " leaving " + target.name + " HP:" + (target.hitPoints - damage));
 			
 			target.hitPoints -= damage;
