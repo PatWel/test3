@@ -1,20 +1,17 @@
 package rpggame;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Set;
+	import java.util.ArrayList;
+	import java.util.Collections;
+	import java.util.HashSet;
+	import java.util.Iterator;
+	import java.util.List;
+	import java.util.PriorityQueue;
+	import java.util.Set;
 
-import core.Position;
+	import core.Position;
 
-
-
-public class Pathfinder {
-	
-
+public class Pathfinder 
+{
 	public static List<Position> findPath(Position source, Position target, GamePanel gp)
 	{
 		final PriorityQueue<Node> open = new PriorityQueue<>();
@@ -33,7 +30,7 @@ public class Pathfinder {
 				int nodeCost = 1;
 				if (gp.checkTileForMonster(x, y, gp.tileSize) != null)
 				{
-					nodeCost = 20;
+					nodeCost = 50;
 				}
 				Node node = new Node(nodeCost, heuristic, x, y, gp.tileSize);
 				
@@ -81,29 +78,41 @@ public class Pathfinder {
 			int x = current.col -1;
 			int y = current.row;
 			
-			neighbor = nodeMap[x][y];
-			neighbors.add(neighbor);
+			if (x >= 0)
+			{
+				neighbor = nodeMap[x][y];
+				neighbors.add(neighbor);
+			}
 			
 			//North
 			x = current.col;
 			y = current.row - 1;
 			
-			neighbor = nodeMap[x][y];
-			neighbors.add(neighbor);
-
+			if (y>= 0) 
+			{
+				neighbor = nodeMap[x][y];
+				neighbors.add(neighbor);
+			}
+			
 			//East
 			x = current.col + 1;
 			y = current.row;
 			
-			neighbor = nodeMap[x][y];
-			neighbors.add(neighbor);
+			if (x<gp.maxWorldCol)
+			{
+				neighbor = nodeMap[x][y];
+				neighbors.add(neighbor);
+			}
 			
 			//South
 			x = current.col;
 			y = current.row + 1;
 			
-			neighbor = nodeMap[x][y];
-			neighbors.add(neighbor);
+			if (y<gp.maxWorldRow)
+			{
+				neighbor = nodeMap[x][y];
+				neighbors.add(neighbor);
+			}
 			
 			Iterator itr = neighbors.iterator();
 			
